@@ -1,0 +1,25 @@
+services:
+  fastapi:
+    build: .
+    hostname: fastapi
+    container_name: fastapi
+    command: "python ./router.py"
+    ports:
+      - "8000:8000"
+
+  producer_kinesis:
+    build: .
+    hostname: producer_kinesis
+    container_name: producer_kinesis
+    command: sh -c "./wait && python ./generator.py"
+    depends_on:
+      - fastapi
+    environment:
+      - WAIT_HOSTS=fastapi:8000
+      - WAIT_HOSTS_TIMEOUT=300
+      - WAIT_SLEEP_INTERVAL=30
+      - WAIT_HOST_CONNECT_TIMEOUT=30
+
+networks:
+  default:
+    name: aws-stream-study-network
